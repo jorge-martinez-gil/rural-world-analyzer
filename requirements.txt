@@ -3,3 +3,4 @@ osmnx==2.0.1
 pandas==1.5.3
 streamlit==1.31.0
 streamlit_folium==0.13.0
+plotly>=5.18.0
