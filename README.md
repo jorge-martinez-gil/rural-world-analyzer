@@ -2,7 +2,7 @@
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://rural-world-analyzer.streamlit.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![OSMnx](https://img.shields.io/badge/powered%20by-OSMnx-green.svg)](https://osmnx.readthedocs.io/)
 
 > **An open-source geospatial tool for quantifying and visualizing civic amenity distribution in rural and semi-urban areas.**
@@ -35,6 +35,8 @@ cd rural-world-analyzer
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+For Streamlit Community Cloud, select Python 3.11 or newer in the app's Advanced settings during deployment.
 
 ### Run with Docker (optional)
 ```bash
