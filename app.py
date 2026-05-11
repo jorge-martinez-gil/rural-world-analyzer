@@ -1,7 +1,7 @@
 import io
 import logging
 import math
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import folium
 import geopandas as gpd
@@ -49,27 +49,69 @@ BIBTEX_ENTRY = """@article{martinez2025overview,
   year={2025},
   publisher={F1000 Research Limited}
 }"""
+
 example_coordinates = {
     "Hagenberg, Austria": (48.36964, 14.5128),
     "Lienz, Austria": (46.8294, 12.7687),
-    "Évora, Portugal": (38.5714, -7.9135),
+    "Evora, Portugal": (38.5714, -7.9135),
     "Oristano, Italy": (39.9036, 8.5920),
-    "Bragança, Portugal": (41.8067, -6.7567),
-    "Ávila, Spain": (40.6567, -4.6810),
-    "Gjirokastër, Albania": (40.0758, 20.1389),
-    "Logroño, Spain": (42.4627, -2.4449),
+    "Braganca, Portugal": (41.8067, -6.7567),
+    "Avila, Spain": (40.6567, -4.6810),
+    "Gjirokaster, Albania": (40.0758, 20.1389),
+    "Logrono, Spain": (42.4627, -2.4449),
     "Oaxaca, Mexico": (17.0732, -96.7266),
     "Mysuru, India": (12.2958, 76.6394),
     "Meknes, Morocco": (33.8935, -5.5473),
     "Arequipa, Peru": (-16.4090, -71.5375),
 }
-map_themes = {
+
+TileSpec = Union[str, dict[str, str]]
+
+map_themes: dict[str, TileSpec] = {
     "OpenStreetMap": "OpenStreetMap",
-    "Stamen Terrain": "Stamen Terrain",
-    "Stamen Toner": "Stamen Toner",
     "CartoDB Positron": "CartoDB positron",
     "CartoDB Dark Matter": "CartoDB dark_matter",
+    "Esri World Imagery": {
+        "tiles": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        "attr": "Tiles (C) Esri",
+    },
+    "OpenTopoMap": {
+        "tiles": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "attr": "Map data (C) OpenStreetMap contributors, SRTM | Map style (C) OpenTopoMap",
+    },
 }
+
+DEFAULT_AREA_1 = "Hagenberg, Austria"
+DEFAULT_AREA_2 = "Oaxaca, Mexico"
+
+
+def sync_area_selection(selection_key: str, name_key: str, lat_key: str, lon_key: str) -> None:
+    area_label = st.session_state[selection_key]
+    latitude, longitude = example_coordinates[area_label]
+    st.session_state[name_key] = area_label
+    st.session_state[lat_key] = latitude
+    st.session_state[lon_key] = longitude
+
+
+def sync_area_1_selection() -> None:
+    sync_area_selection("area_1_label", "area_name_1", "lat_1", "lon_1")
+
+
+def sync_area_2_selection() -> None:
+    sync_area_selection("area_2_label", "area_name_2", "lat_2", "lon_2")
+
+
+def initialize_area_state() -> None:
+    defaults = (
+        ("area_1_label", "area_name_1", "lat_1", "lon_1", DEFAULT_AREA_1),
+        ("area_2_label", "area_name_2", "lat_2", "lon_2", DEFAULT_AREA_2),
+    )
+    for selection_key, name_key, lat_key, lon_key, default_area in defaults:
+        st.session_state.setdefault(selection_key, default_area)
+        st.session_state.setdefault(name_key, st.session_state[selection_key])
+        latitude, longitude = example_coordinates[st.session_state[selection_key]]
+        st.session_state.setdefault(lat_key, latitude)
+        st.session_state.setdefault(lon_key, longitude)
 
 
 def compute_zoom_level(radius: int) -> int:
@@ -96,12 +138,10 @@ def get_amenities(
         return pd.DataFrame()
 
 
-
 def get_amenity_series(amenities_df: pd.DataFrame) -> pd.Series:
     if amenities_df.empty or "amenity" not in amenities_df:
         return pd.Series(dtype="object")
     return amenities_df["amenity"].dropna().astype(str)
-
 
 
 def compute_shannon_index(amenities_df: pd.DataFrame) -> float:
@@ -114,7 +154,6 @@ def compute_shannon_index(amenities_df: pd.DataFrame) -> float:
     return round(float(shannon_index), 3)
 
 
-
 def compute_rai(amenities_df: pd.DataFrame) -> float:
     if amenities_df.empty:
         return 0.0
@@ -123,7 +162,6 @@ def compute_rai(amenities_df: pd.DataFrame) -> float:
     unique_types = int(amenity_series.nunique()) if not amenity_series.empty else 0
     diversity_score = compute_shannon_index(amenities_df)
     return min(100, round((count * 0.4 + diversity_score * 30 + unique_types * 2), 1))
-
 
 
 def extract_coordinates(geometry) -> Tuple[Optional[float], Optional[float]]:
@@ -135,7 +173,6 @@ def extract_coordinates(geometry) -> Tuple[Optional[float], Optional[float]]:
     return centroid.y, centroid.x
 
 
-
 def add_markers_to_map(folium_map: folium.Map, amenities: pd.DataFrame, amenity_type: str) -> None:
     marker_cluster = MarkerCluster().add_to(folium_map)
     for _, row in amenities.iterrows():
@@ -145,8 +182,16 @@ def add_markers_to_map(folium_map: folium.Map, amenities: pd.DataFrame, amenity_
         amenity_label = row.get("amenity", amenity_type)
         name = row.get("name", "N/A")
         tooltip = f"{str(amenity_label).replace('_', ' ').title()}: {name}"
-        folium.Marker(location=[lat, lon], popup=tooltip, tooltip=tooltip).add_to(marker_cluster)
-
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=5,
+            color="#2563eb",
+            fill=True,
+            fill_color="#60a5fa",
+            fill_opacity=0.85,
+            popup=tooltip,
+            tooltip=tooltip,
+        ).add_to(marker_cluster)
 
 
 def add_heatmap_to_map(folium_map: folium.Map, amenities: pd.DataFrame) -> None:
@@ -157,7 +202,6 @@ def add_heatmap_to_map(folium_map: folium.Map, amenities: pd.DataFrame) -> None:
             heat_data.append([lat, lon])
     if heat_data:
         HeatMap(heat_data).add_to(folium_map)
-
 
 
 def create_plotly_chart(amenities_df: pd.DataFrame):
@@ -185,7 +229,6 @@ def create_plotly_chart(amenities_df: pd.DataFrame):
     return fig
 
 
-
 def prepare_export_dataframe(amenities_df: pd.DataFrame) -> pd.DataFrame:
     if amenities_df.empty:
         return pd.DataFrame(columns=["name", "amenity", "lat", "lon"])
@@ -208,7 +251,6 @@ def prepare_export_dataframe(amenities_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-
 def build_map(
     latitude: float,
     longitude: float,
@@ -219,15 +261,25 @@ def build_map(
     show_markers: bool,
     show_heatmap: bool,
 ) -> folium.Map:
-    folium_map = folium.Map(
-        location=[latitude, longitude],
-        zoom_start=compute_zoom_level(radius),
-        tiles=map_themes.get(map_theme, "OpenStreetMap"),
-    )
+    tile_spec = map_themes.get(map_theme, "OpenStreetMap")
+    if isinstance(tile_spec, dict):
+        folium_map = folium.Map(
+            location=[latitude, longitude],
+            zoom_start=compute_zoom_level(radius),
+            tiles=tile_spec["tiles"],
+            attr=tile_spec["attr"],
+        )
+    else:
+        folium_map = folium.Map(
+            location=[latitude, longitude],
+            zoom_start=compute_zoom_level(radius),
+            tiles=tile_spec,
+        )
+
     folium.Circle(
         location=[latitude, longitude],
         radius=radius,
-        color="blue",
+        color="#2563eb",
         fill=True,
         fill_opacity=0.1,
         popup=f"Radius: {radius} m",
@@ -241,7 +293,6 @@ def build_map(
     return folium_map
 
 
-
 def render_summary_metrics(amenities_df: pd.DataFrame, rai_score: float, shannon_index: float) -> None:
     summary_columns = st.columns(4)
     total_amenities = int(len(amenities_df))
@@ -250,7 +301,6 @@ def render_summary_metrics(amenities_df: pd.DataFrame, rai_score: float, shannon
     summary_columns[1].metric("Unique Types", unique_types)
     summary_columns[2].metric("RAI Score", f"{rai_score}/100")
     summary_columns[3].metric("Shannon Index", shannon_index)
-
 
 
 def render_download_buttons(amenities_df: pd.DataFrame, area_name: str, key_prefix: str) -> None:
@@ -266,20 +316,19 @@ def render_download_buttons(amenities_df: pd.DataFrame, area_name: str, key_pref
 
     download_columns = st.columns(2)
     download_columns[0].download_button(
-        "📥 Download CSV",
+        "Download CSV",
         data=csv_buffer.getvalue().encode("utf-8"),
         file_name=f"{area_name.lower().replace(' ', '_')}_amenities.csv",
         mime="text/csv",
         key=f"csv_{key_prefix}",
     )
     download_columns[1].download_button(
-        "🗺️ Download GeoJSON",
+        "Download GeoJSON",
         data=geojson_data,
         file_name=f"{area_name.lower().replace(' ', '_')}_amenities.geojson",
         mime="application/geo+json",
         key=f"geojson_{key_prefix}",
     )
-
 
 
 def render_area_analysis(
@@ -294,7 +343,7 @@ def render_area_analysis(
     key_prefix: str,
     map_width: int,
 ) -> None:
-    st.subheader(f"🗺️ {area_name}")
+    st.subheader(area_name)
     amenities = get_amenities(latitude, longitude, amenity_type, radius)
 
     if amenities.empty:
@@ -304,8 +353,8 @@ def render_area_analysis(
     rai_score = compute_rai(amenities)
     shannon_index = compute_shannon_index(amenities)
     hero_columns = st.columns([1.4, 1])
-    hero_columns[0].metric("🌟 Rural Accessibility Index (RAI)", f"{rai_score}/100")
-    hero_columns[1].metric("🌿 Shannon Diversity Index", shannon_index)
+    hero_columns[0].metric("Rural Accessibility Index (RAI)", f"{rai_score}/100")
+    hero_columns[1].metric("Shannon Diversity Index", shannon_index)
 
     folium_map = build_map(
         latitude,
@@ -317,16 +366,16 @@ def render_area_analysis(
         show_markers,
         show_heatmap,
     )
-    st.markdown("### 🧭 Interactive Map")
+    st.markdown("### Interactive Map")
     st_folium(folium_map, width=map_width, height=500, key=f"map_{key_prefix}")
 
-    st.markdown("### 📈 Statistics Summary")
+    st.markdown("### Statistics Summary")
     render_summary_metrics(amenities, rai_score, shannon_index)
 
-    st.markdown("### 📥 Export Data")
+    st.markdown("### Export Data")
     render_download_buttons(amenities, area_name, key_prefix)
 
-    st.markdown("### 📊 Amenity Distribution")
+    st.markdown("### Amenity Distribution")
     chart = create_plotly_chart(amenities)
     if chart is None:
         st.info("No amenity distribution data available for charting.")
@@ -334,9 +383,10 @@ def render_area_analysis(
         st.plotly_chart(chart, use_container_width=True, key=f"chart_{key_prefix}")
 
 
-
 def main() -> None:
-    st.title("🌿 Rural World Analyzer")
+    initialize_area_state()
+
+    st.title("Rural World Analyzer")
     st.markdown(
         """
         Rural World Analyzer is an open-source geospatial tool for quantifying and visualizing
@@ -348,11 +398,15 @@ def main() -> None:
 
     st.sidebar.header("Configuration")
     st.sidebar.markdown("**Select a Test Area**")
-    area_1_label = st.sidebar.selectbox("Example Area 1", list(example_coordinates.keys()), index=0)
-    area_1_coords = example_coordinates[area_1_label]
-    area_name_1 = st.sidebar.text_input("Area Name", value=area_1_label, key="area_name_1")
-    lat_1 = st.sidebar.number_input("Latitude", value=area_1_coords[0], key="lat_1", format="%.6f")
-    lon_1 = st.sidebar.number_input("Longitude", value=area_1_coords[1], key="lon_1", format="%.6f")
+    area_1_label = st.sidebar.selectbox(
+        "Example Area 1",
+        list(example_coordinates.keys()),
+        key="area_1_label",
+        on_change=sync_area_1_selection,
+    )
+    area_name_1 = st.sidebar.text_input("Area Name", key="area_name_1")
+    lat_1 = st.sidebar.number_input("Latitude", key="lat_1", format="%.6f")
+    lon_1 = st.sidebar.number_input("Longitude", key="lon_1", format="%.6f")
 
     comparison_mode = st.sidebar.checkbox("Enable Area Comparison", value=False)
 
@@ -361,11 +415,15 @@ def main() -> None:
     lon_2 = None
     if comparison_mode:
         st.sidebar.markdown("**Comparison Area**")
-        area_2_label = st.sidebar.selectbox("Example Area 2", list(example_coordinates.keys()), index=8)
-        area_2_coords = example_coordinates[area_2_label]
-        area_name_2 = st.sidebar.text_input("Area Name 2", value=area_2_label, key="area_name_2")
-        lat_2 = st.sidebar.number_input("Latitude 2", value=area_2_coords[0], key="lat_2", format="%.6f")
-        lon_2 = st.sidebar.number_input("Longitude 2", value=area_2_coords[1], key="lon_2", format="%.6f")
+        st.sidebar.selectbox(
+            "Example Area 2",
+            list(example_coordinates.keys()),
+            key="area_2_label",
+            on_change=sync_area_2_selection,
+        )
+        area_name_2 = st.sidebar.text_input("Area Name 2", key="area_name_2")
+        lat_2 = st.sidebar.number_input("Latitude 2", key="lat_2", format="%.6f")
+        lon_2 = st.sidebar.number_input("Longitude 2", key="lon_2", format="%.6f")
 
     st.sidebar.markdown("**Choose Amenity Type**")
     amenity_type = st.sidebar.selectbox("Amenity Type", AMENITY_TYPES)
@@ -382,12 +440,12 @@ def main() -> None:
     show_markers = st.sidebar.checkbox("Show Markers", value=True)
     show_heatmap = st.sidebar.checkbox("Show Heatmap", value=True)
     st.sidebar.markdown("---")
-    st.sidebar.markdown("Built with ❤️ for rural research | [Cite this tool](#citation)")
+    st.sidebar.markdown("Built for rural research | [Cite this tool](#citation)")
 
     if "analysis_requested" not in st.session_state:
         st.session_state.analysis_requested = False
 
-    if st.sidebar.button("🔍 Analyze Area"):
+    if st.sidebar.button("Analyze Area"):
         st.session_state.analysis_requested = True
 
     if st.session_state.analysis_requested:
@@ -435,7 +493,7 @@ def main() -> None:
                 )
 
     st.markdown('<div id="citation"></div>', unsafe_allow_html=True)
-    with st.expander("📄 How to cite this tool"):
+    with st.expander("How to cite this tool"):
         st.code(BIBTEX_ENTRY, language="bibtex")
 
 
