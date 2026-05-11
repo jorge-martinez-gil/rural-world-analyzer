@@ -4,6 +4,7 @@ import math
 from typing import Optional, Tuple
 
 import folium
+import geopandas as gpd
 import osmnx as ox
 import pandas as pd
 import plotly.express as px
@@ -104,6 +105,7 @@ def get_amenity_series(amenities_df: pd.DataFrame) -> pd.Series:
 
 
 def compute_shannon_index(amenities_df: pd.DataFrame) -> float:
+    """Compute Shannon entropy with the ecological natural-log convention."""
     amenity_series = get_amenity_series(amenities_df)
     if amenity_series.empty:
         return 0.0
@@ -255,7 +257,12 @@ def render_download_buttons(amenities_df: pd.DataFrame, area_name: str, key_pref
     export_df = prepare_export_dataframe(amenities_df)
     csv_buffer = io.StringIO()
     export_df.to_csv(csv_buffer, index=False)
-    geojson_data = amenities_df.to_json() if hasattr(amenities_df, "to_json") else "{}"
+    geojson_frame = (
+        amenities_df
+        if isinstance(amenities_df, gpd.GeoDataFrame)
+        else gpd.GeoDataFrame(amenities_df, geometry="geometry")
+    )
+    geojson_data = geojson_frame.to_json()
 
     download_columns = st.columns(2)
     download_columns[0].download_button(
