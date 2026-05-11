@@ -1,0 +1,22 @@
+{
+  "title": "Rural World Analyzer",
+  "description": "An open-source geospatial Streamlit application for quantifying and visualizing civic amenity distribution in rural and semi-urban areas using OpenStreetMap data. Introduces the Rural Accessibility Index (RAI).",
+  "creators": [
+    {
+      "name": "Martinez-Gil, Jorge",
+      "affiliation": "Software Competence Center Hagenberg",
+      "orcid": "0000-0002-5983-2314"
+    }
+  ],
+  "keywords": ["rural", "smart villages", "OpenStreetMap", "geospatial", "accessibility", "streamlit", "osmnx", "python"],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/jorge-martinez-gil/rural-world-analyzer",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

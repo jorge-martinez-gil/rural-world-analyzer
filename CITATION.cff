@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Rural World Analyzer"
+abstract: "An open-source geospatial Streamlit application for quantifying and visualizing the distribution and diversity of civic amenities in rural and semi-urban areas using OpenStreetMap data."
+authors:
+  - family-names: "Martinez-Gil"
+    given-names: "Jorge"
+    orcid: "https://orcid.org/0000-0002-5983-2314"
+repository-code: "https://github.com/jorge-martinez-gil/rural-world-analyzer"
+url: "https://rural-world-analyzer.streamlit.app/"
+license: MIT
+version: "1.0.0"
+date-released: "2025-03-11"
+keywords:
+  - rural
+  - smart villages
+  - OpenStreetMap
+  - geospatial
+  - accessibility
+  - amenities
+  - streamlit
+  - osmnx
+preferred-citation:
+  type: article
+  title: "An overview of civic engagement tools for rural communities"
+  authors:
+    - family-names: "Martinez-Gil"
+      given-names: "Jorge"
+    - family-names: "Pichler"
+      given-names: "Mario"
+    - family-names: "Lechat"
+      given-names: "Noemi"
+    - family-names: "Lentini"
+      given-names: "Gianluca"
+    - family-names: "Cvar"
+      given-names: "Nina"
+    - family-names: "Trilar"
+      given-names: "Jure"
+    - family-names: "Bucchiarone"
+      given-names: "Antonio"
+    - family-names: "Marconi"
+      given-names: "Annapaola"
+  journal: "Open Research Europe"
+  volume: 4
+  issue: 195
+  year: 2025
+  publisher: "F1000 Research Limited"

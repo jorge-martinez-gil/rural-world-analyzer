@@ -1,55 +1,94 @@
-# Rural World Analyzer
+# 🌿 Rural World Analyzer
 
-Rural World Analyzer is an interactive Streamlit application that allows users to explore and visualize amenities in rural areas using OpenStreetMap data. The app fetches geographic data through OSMnx and presents it in dynamic maps with markers and heatmaps, as well as interactive charts using Plotly.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://rural-world-analyzer.streamlit.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
+[![OSMnx](https://img.shields.io/badge/powered%20by-OSMnx-green.svg)](https://osmnx.readthedocs.io/)
 
-![Rural World Analyzer](image.png)
+> **An open-source geospatial tool for quantifying and visualizing civic amenity distribution in rural and semi-urban areas.**
 
-## Features
+Rural World Analyzer enables researchers, planners, and policymakers to interactively explore the availability and diversity of public services in rural territories using OpenStreetMap data. It introduces the **Rural Accessibility Index (RAI)**, a composite metric for comparing service provision across geographic areas.
 
-- **Interactive Map Visualization:** 
-  - Display amenities using markers with tooltips.
-  - Overlay a heatmap layer for density visualization.
-  - Customize map themes (e.g., OpenStreetMap, Stamen Terrain, CartoDB Positron).
+## 🌐 Live Demo
 
-- **Dynamic Data Retrieval:** 
-  - Fetch amenities based on user-specified coordinates and radius.
-  - Filter results by amenity types (e.g., restaurant, hospital, school).
+👉 **[https://rural-world-analyzer.streamlit.app/](https://rural-world-analyzer.streamlit.app/)**
 
-- **Data Dashboard:**
-  - Visualize the distribution of amenities with interactive Plotly bar charts.
+![Rural World Analyzer Screenshot](image.png)
 
-- **Easy Configuration:** 
-  - Sidebar controls to configure the test area, coordinates, amenity type, and visualization options.
+## ✨ Features
 
+- 🗺️ **Interactive Map Visualization** — markers, heatmaps, and radius overlays via Folium
+- 📊 **Amenity Distribution Charts** — Plotly-powered bar charts of amenity type frequencies
+- 🧮 **Rural Accessibility Index (RAI)** — novel composite metric (0–100) combining amenity count, diversity, and Shannon entropy
+- 🔬 **Shannon Diversity Index** — ecological diversity measure applied to urban service landscapes
+- 🔄 **Area Comparison Mode** — side-by-side analysis of two geographic areas
+- 📥 **Data Export** — download results as CSV or GeoJSON for reproducible research
+- 🌍 **Global Coverage** — pre-loaded example locations across Europe, Americas, Africa, and Asia
+- 🎨 **Multiple Map Themes** — OpenStreetMap, CartoDB Positron, CartoDB Dark Matter, and more
 
+## 🚀 Quick Start
 
-## Code Structure
+### Run locally
+```bash
+git clone https://github.com/jorge-martinez-gil/rural-world-analyzer.git
+cd rural-world-analyzer
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-- **Constants & Example Data:**  
-  Contains default configurations such as radius, example coordinates, and map theme options.
+### Run with Docker (optional)
+```bash
+docker run -p 8501:8501 -v $(pwd):/app streamlit/streamlit:latest streamlit run /app/app.py
+```
 
-- **Helper Functions:**  
-  - `compute_zoom_level`: Dynamically calculates the map zoom level based on the radius.
-  - `get_amenities`: Fetches amenities data using OSMnx.
-  - `add_markers_to_map`: Adds markers to the Folium map.
-  - `add_heatmap_to_map`: Adds a heatmap layer to the Folium map.
-  - `create_plotly_chart`: Generates a bar chart for amenity distribution.
+## 🧮 Methodology
 
-- **Main Application:**  
-  Contains the Streamlit app logic that integrates the sidebar configuration and data visualizations.
-
-## Customization
-
-Feel free to modify the code to better suit your needs:
-- **Radius & Test Areas:** Update the `RADIUS_DEFAULT` and `example_coordinates` as needed.
-- **Amenity Types:** Customize or extend the list of amenity types in the sidebar.
-- **Map Themes:** Add or change map themes by updating the `map_themes` dictionary.
-
-## Reference
-
-For further reading, refer to our recent publications:
+### Rural Accessibility Index (RAI)
+The RAI is a composite score (0–100) defined as:
 
 ```
+RAI = min(100, N × 0.4 + H × 30 + K × 2)
+```
+
+Where:
+- **N** = total number of amenities within the search radius
+- **H** = Shannon diversity index of amenity types: H = -Σ(pᵢ × log(pᵢ))
+- **K** = number of unique amenity categories
+
+This formulation rewards both quantity and variety of services, penalizing areas with many amenities of a single type.
+
+## 📦 Repository Structure
+
+```
+rural-world-analyzer/
+├── app.py              # Main Streamlit application
+├── requirements.txt    # Python dependencies
+├── CITATION.cff        # Machine-readable citation file
+├── .zenodo.json        # Zenodo metadata for DOI minting
+├── paper.md            # JOSS-style research paper
+├── CONTRIBUTING.md     # Contribution guidelines
+├── LICENSE             # MIT License
+└── README.md           # This file
+```
+
+## 🔧 Configuration & Customization
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| Radius | 1000 m | Search radius around the target point |
+| Amenity Type | all | Filter by specific OSM amenity tag |
+| Map Theme | OpenStreetMap | Base tile layer |
+| Comparison Mode | Off | Enable side-by-side area comparison |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 📄 Citation
+
+If you use Rural World Analyzer in your research, please cite:
+
+```bibtex
 @article{martinez2025overview,
   title={An overview of civic engagement tools for rural communities},
   author={Martinez-Gil, Jorge and Pichler, Mario and Lechat, Noemi and Lentini, Gianluca and Cvar, Nina and Trilar, Jure and Bucchiarone, Antonio and Marconi, Annapaola},
@@ -62,6 +101,12 @@ For further reading, refer to our recent publications:
 }
 ```
 
-## License
+You can also cite the software directly using the metadata in [CITATION.cff](CITATION.cff).
+
+## 🙏 Acknowledgements
+
+This tool was developed in the context of rural digitalization and smart village research. It relies on [OSMnx](https://github.com/gboeing/osmnx) by Geoff Boeing and the broader OpenStreetMap community.
+
+## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
