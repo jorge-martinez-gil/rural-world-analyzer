@@ -9,11 +9,38 @@
 
 Rural World Analyzer enables researchers, planners, and policymakers to interactively explore the availability and diversity of public services in rural territories using OpenStreetMap data. It introduces the **Rural Accessibility Index (RAI)**, a composite metric for comparing service provision across geographic areas.
 
+## 📖 Table of Contents
+
+- [🌐 Live Demo](#-live-demo)
+- [🧐 Why This Matters](#-why-this-matters)
+- [📸 Screenshots](#-screenshots)
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [🧮 Methodology](#-methodology)
+- [🔧 Configuration](#-configuration--customization)
+- [📦 Repository Structure](#-repository-structure)
+- [🤝 Contributing](#-contributing)
+- [📄 Citation](#-citation)
+- [📜 License](#-license)
+
 ## 🌐 Live Demo
 
 👉 **[https://rural-world-analyzer.streamlit.app/](https://rural-world-analyzer.streamlit.app/)**
 
-![Rural World Analyzer Screenshot](image.png)
+## 🧐 Why This Matters
+
+Rural communities often face significant challenges in accessing essential services like healthcare, education, and finance. Conventional GIS analysis can be cost-prohibitive or technically demanding for local planners.
+
+**Rural World Analyzer** bridges this gap by offering:
+- **Instant Insights:** Get immediate feedback on the service density of any location worldwide.
+- **Diversity Metrics:** Go beyond simple counts with Shannon entropy and the RAI.
+- **Side-by-Side Comparison:** Evaluate how different regions compare in terms of amenity provision.
+
+## 📸 Screenshots
+
+| Standard Analysis | Comparison Mode |
+| :---: | :---: |
+| ![Rural World Analyzer Screenshot](image.png) | *[Comparison mode allows side-by-side analysis]* |
 
 ## ✨ Features
 
@@ -29,14 +56,31 @@ Rural World Analyzer enables researchers, planners, and policymakers to interact
 ## 🚀 Quick Start
 
 ### Run locally
-```bash
-git clone https://github.com/jorge-martinez-gil/rural-world-analyzer.git
-cd rural-world-analyzer
-pip install -r requirements.txt
-streamlit run app.py
-```
 
-For Streamlit Community Cloud, select Python 3.11 or newer in the app's Advanced settings during deployment.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/jorge-martinez-gil/rural-world-analyzer.git
+   cd rural-world-analyzer
+   ```
+
+2. **Set up a virtual environment (recommended)**
+   ```bash
+   python -m venv venv
+   # On Windows
+   .\venv\Scripts\activate
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Launch the application**
+   ```bash
+   streamlit run app.py
+   ```
 
 ### Run with Docker (optional)
 ```bash
@@ -49,12 +93,12 @@ docker run -p 8501:8501 -v $(pwd):/app streamlit/streamlit:latest streamlit run 
 The RAI is a composite score (0–100) defined as:
 
 ```
-RAI = min(100, N × 0.4 + H × 30 + K × 2)
+RAI = min(100, N * 0.4 + H * 30 + K * 2)
 ```
 
 Where:
 - **N** = total number of amenities within the search radius
-- **H** = Shannon diversity index of amenity types: H = -Σ(pᵢ × log(pᵢ))
+- **H** = Shannon diversity index of amenity types: H = -Σ(p_i * log(p_i))
 - **K** = number of unique amenity categories
 
 This formulation rewards both quantity and variety of services, penalizing areas with many amenities of a single type.
@@ -76,15 +120,15 @@ rural-world-analyzer/
 ## 🔧 Configuration & Customization
 
 | Parameter | Default | Description |
-|-----------|---------|-------------|
-| Radius | 1000 m | Search radius around the target point |
-| Amenity Type | all | Filter by specific OSM amenity tag |
-| Map Theme | OpenStreetMap | Base tile layer |
-| Comparison Mode | Off | Enable side-by-side area comparison |
+| :--- | :--- | :--- |
+| **Radius** | 1000 m | Search radius around the target point (300m - 3000m) |
+| **Amenity Type** | all | Filter by specific OSM amenity tag (restaurant, hospital, etc.) |
+| **Map Theme** | OpenStreetMap | Base tile layer (Positron, Dark Matter, Satellite, etc.) |
+| **Comparison Mode** | Off | Enable side-by-side area comparison |
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to submit pull requests, report issues, or suggest new features.
 
 ## 📄 Citation
 
